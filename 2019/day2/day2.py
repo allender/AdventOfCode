@@ -1,5 +1,9 @@
-import sys
+# pylint: disable=missing-docstring, unused-import, mixed-indentation
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from IntComputer import IntComputer
 
 def run_program(opcodes):
     ip = 0
@@ -24,21 +28,21 @@ def run_program(opcodes):
 
 if __name__ == '__main__':
     with open('input.txt') as f:
-        s = f.read()
+        program = f.read()
 
-    orig_opcodes = [ int(x) for x in s.split(',') ]
+    machine = IntComputer.IntComputer( program )
+    machine.memory.set( 1, 12 )
+    machine.run( )
+    print ( machine.memory.get(0) )
 
     ip = 0
     values = range(0, 99)
     for x in values:
         for y in values: 
-            opcodes = orig_opcodes.copy()
-            opcodes[1] = x
-            opcodes[2] = y
-            run_program(opcodes)
-            if (opcodes[0] == 19690720):
-                print(opcodes)
-                print (100 * opcodes[1] + opcodes[2])
+            machine = IntComputer.IntComputer( program )
+            machine.memory.set( 1, x )
+            machine.memory.set( 2, y )
+            machine.run( )
+            if ( machine.memory.get( 0 ) == 19690720 ):
+                print (100 * machine.memory.get( 1 ) + machine.memory.get( 2 ) )
                 sys.exit(0)
-
-
