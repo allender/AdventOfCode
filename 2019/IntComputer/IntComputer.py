@@ -41,7 +41,7 @@ class IntComputer():
         # reset the memory used for the program
         self.memory.init( self._program )
         self.inputs = [ ]
-        self.output = 0
+        self.outputs = [ ]
         self.ip = 0
         self.is_running = False
         self.relative_base = 0
@@ -93,8 +93,7 @@ class IntComputer():
 
     def _opoutput(self, mode):
         value = self._get_num(mode)
-        self.output = value
-        print(value)
+        self.outputs.append( value )
 
     def _opjumpiftrue(self, mode1, mode2):
         value = self._get_num(mode1)
