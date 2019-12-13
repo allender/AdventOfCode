@@ -41,6 +41,7 @@ class IntComputer():
         # reset the memory used for the program
         self.memory.init( self._program )
         self.inputs = [ ]
+        self.steady_input = None
         self.outputs = [ ]
         self.ip = 0
         self.is_running = False
@@ -88,7 +89,10 @@ class IntComputer():
 
     def _opinput(self, mode):
         # get input and store it
-        input = self.inputs.pop(0)
+        if self.inputs:
+            input = self.inputs.pop(0)
+        else:
+            input = self.steady_input
         self._put_num(input, mode)
 
     def _opoutput(self, mode):
@@ -129,37 +133,38 @@ class IntComputer():
         value = self._get_num(mode1)
         self.relative_base += value
 
+    def run_instruction(self):
+        opcode, mode1, mode2, mode3 = self._process_opcode()
+        if opcode == 1:
+            self._opadd(mode1, mode2, mode3)
+        elif opcode == 2:
+            self._opmult(mode1, mode2, mode3)
+        elif opcode == 3:
+            if not self.inputs and self.steady_input is None:
+                # go back one instruction so we process
+                # the input again
+                self.ip -= 1
+                return
+            self._opinput(mode1)
+        elif opcode == 4:
+            self._opoutput(mode1)
+        elif opcode == 5:
+            self._opjumpiftrue(mode1, mode2)
+        elif opcode == 6:
+            self._opjumpiffalse(mode1, mode2)
+        elif opcode == 7:
+            self._oplessthan(mode1, mode2, mode3)
+        elif opcode == 8:
+            self._opequals(mode1, mode2, mode3)
+        elif opcode == 9:
+            self._adjustrelative(mode1)
+        elif opcode == 99:
+            self.is_running = False
+        else:
+            print("bad opcode {0}".format(opcode))
+            sys.exit(-1)
+
     def run(self):
         self.is_running = True
         while True:
-            opcode, mode1, mode2, mode3 = self._process_opcode()
-            if opcode == 1:
-                self._opadd(mode1, mode2, mode3)
-            elif opcode == 2:
-                self._opmult(mode1, mode2, mode3)
-            elif opcode == 3:
-                if not self.inputs:
-                    # go back one instruction so we process
-                    # the input again
-                    self.ip -= 1
-                    break
-                self._opinput(mode1)
-            elif opcode == 4:
-                self._opoutput(mode1)
-            elif opcode == 5:
-                self._opjumpiftrue(mode1, mode2)
-            elif opcode == 6:
-                self._opjumpiffalse(mode1, mode2)
-            elif opcode == 7:
-                self._oplessthan(mode1, mode2, mode3)
-            elif opcode == 8:
-                self._opequals(mode1, mode2, mode3)
-            elif opcode == 9:
-                self._adjustrelative(mode1)
-            elif opcode == 99:
-                self.is_running = False
-                break
-            else:
-                print("bad opcode {0}".format(opcode))
-                sys.exit(-1)
-
+            self._run_instruction( )
