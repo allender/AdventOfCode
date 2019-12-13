@@ -14,7 +14,10 @@ class Arcade(IntComputer.IntComputer):
         self.score = 0
         self.paddle_x = -1 
         self.ball_x = -1 
-        super().__init__(program)
+        super().__init__(program, self.input_cb)
+
+    def input_cb(self):
+        self.inputs.append( self.ball_x - self.paddle_x )
 
     def run(self):
         self.is_running = True
@@ -45,11 +48,16 @@ class Arcade(IntComputer.IntComputer):
                         # use ansi color to print out the board.  Use the background
                         # colors in order from 40 (black) and subsequent colors
                         # for walls, ball, blocks, etc
-                        ansi_str = '{:c}[{};{}H{:c}[{}m '.format( 27, y+1, x+1, 27, 40 + tile )
+                        char = ' '
+                        if tile == 4:
+                            char = "B"
+                        elif tile == 3:
+                            char = '='
+                        if char == ' ':
+                            ansi_str = '{:c}[{};{}H{:c}[{}m{}'.format( 27, y+1, x+1, 27, 40 + tile, char )
+                        else:
+                            ansi_str = '{:c}[{};{}H{}'.format( 27, y+1, x+1, char )
                         print(ansi_str, end='', flush=True)
-
-                # see if we should set the input for the joystick
-                self.steady_input = self.ball_x - self.paddle_x
 
             if (self.is_running == False):
                 break

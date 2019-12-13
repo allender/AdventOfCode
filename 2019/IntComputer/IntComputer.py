@@ -32,16 +32,16 @@ class Memory():
 
 class IntComputer():
 
-    def __init__(self, program):
+    def __init__(self, program, input_cb = None):
         self.memory = Memory()
         self._program = [ int(x) for x in program.split(',') ]
+        self.input_cb = input_cb
         self.reset( )
 
     def reset(self):
         # reset the memory used for the program
         self.memory.init( self._program )
         self.inputs = [ ]
-        self.steady_input = None
         self.outputs = [ ]
         self.ip = 0
         self.is_running = False
@@ -140,7 +140,10 @@ class IntComputer():
         elif opcode == 2:
             self._opmult(mode1, mode2, mode3)
         elif opcode == 3:
-            if not self.inputs and self.steady_input is None:
+            if self.input_cb is not None:
+                self.input_cb( )
+
+            if not self.inputs:
                 # go back one instruction so we process
                 # the input again
                 self.ip -= 1
