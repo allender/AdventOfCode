@@ -14,8 +14,6 @@ class Arcade():
         self._program = program
         self.tiles = { }
         self.score = 0
-        self.paddle_x = -1 
-        self.ball_x = -1 
         self.show_display = show_display
         self._input_queue = queue.Queue()
         self._output_queue = queue.Queue()
@@ -34,9 +32,9 @@ class Arcade():
         elif tile == 3:
             char = '='
         if char == ' ':
-            ansi_str = '{:c}[{};{}H{:c}[{}m{}'.format( 27, y+1, x+1, 27, 40 + tile, char )
+            ansi_str = '{:c}[{};{}H{:c}[{}m{}'.format( 27, y+2, x+2, 27, 40 + tile, char )
         else:
-            ansi_str = '{:c}[{};{}H{}'.format( 27, y+1, x+1, char )
+            ansi_str = '{:c}[{};{}H{}'.format( 27, y+2, x+2, char )
         print(ansi_str, end='', flush=True)
 
         ansi_str = '{:c}[0;0H{}'.format( 27, self.score )
@@ -46,8 +44,12 @@ class Arcade():
         # start the int computer
         self._computer = IntComputer.IntComputer( self._program, self._input_queue, self._output_queue )
         threading.Thread( target = self._computer.run).start( )
-        while self._computer.is_running is True:
 
+        # keep track of paddle and ball
+        paddle_x = -1
+        ball_x = -1
+
+        while self._computer.is_running is True:
             outputs = [ ]
             for _ in range(3):
                 outputs.append( self._output_queue.get( ) )
@@ -60,10 +62,14 @@ class Arcade():
             if tile == 0:
                 self.tiles.pop( (x, y), None)
             elif tile == 3:
-                self.paddle_x = x
+                paddle_x = x
             elif tile == 4:
-                self.ball_x = x
-                self._input_queue.put( self.ball_x - self.paddle_x )
+                ball_x = x
+
+                # I think that this works based on the way
+                # the program works.  Trial and error
+                # worked here :)
+                self._input_queue.put( ball_x - paddle_x )
             
             if x == -1 and y == 0:
                 self.score = tile
@@ -82,10 +88,9 @@ if __name__ == '__main__':
     arcade = Arcade( program, False )
     arcade.start( )
     print ( len( [ x for x in arcade.tiles.values() if x == 2 ] ) )
-# part 2
+
+    # part 2
     program[0] = 2
-    arcade = Arcade( program, False )
+    arcade = Arcade( program, True )
     arcade.start( )
     print( arcade.score )
-
-
