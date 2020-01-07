@@ -19,7 +19,7 @@ class NIC(IntComputer.IntComputer):
         self.idle = False
         super().__init__( self._program, input_queue, output_queue )
 
-    def opinput(self, mode):
+    def _opinput(self, mode):
         # overrideen from base class to return -1
         # if there is no input to process
         try:

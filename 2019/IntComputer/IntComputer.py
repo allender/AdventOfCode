@@ -132,7 +132,7 @@ class IntComputer():
     def run(self):
         self.is_running = True
         while self.is_running is True:
-            step( )
+            self.step( )
 
     def step(self):
         opcode, mode1, mode2, mode3 = self._process_opcode()
