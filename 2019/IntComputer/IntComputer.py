@@ -132,27 +132,30 @@ class IntComputer():
     def run(self):
         self.is_running = True
         while self.is_running is True:
-            opcode, mode1, mode2, mode3 = self._process_opcode()
-            if opcode == 1:
-                self._opadd(mode1, mode2, mode3)
-            elif opcode == 2:
-                self._opmult(mode1, mode2, mode3)
-            elif opcode == 3:
-                self._opinput(mode1)
-            elif opcode == 4:
-                self._opoutput(mode1)
-            elif opcode == 5:
-                self._opjumpiftrue(mode1, mode2)
-            elif opcode == 6:
-                self._opjumpiffalse(mode1, mode2)
-            elif opcode == 7:
-                self._oplessthan(mode1, mode2, mode3)
-            elif opcode == 8:
-                self._opequals(mode1, mode2, mode3)
-            elif opcode == 9:
-                self._adjustrelative(mode1)
-            elif opcode == 99:
-                self.is_running = False
-            else:
-                print("bad opcode {0}".format(opcode))
-                sys.exit(-1)
+            step( )
+
+    def step(self):
+        opcode, mode1, mode2, mode3 = self._process_opcode()
+        if opcode == 1:
+            self._opadd(mode1, mode2, mode3)
+        elif opcode == 2:
+            self._opmult(mode1, mode2, mode3)
+        elif opcode == 3:
+            self._opinput(mode1)
+        elif opcode == 4:
+            self._opoutput(mode1)
+        elif opcode == 5:
+            self._opjumpiftrue(mode1, mode2)
+        elif opcode == 6:
+            self._opjumpiffalse(mode1, mode2)
+        elif opcode == 7:
+            self._oplessthan(mode1, mode2, mode3)
+        elif opcode == 8:
+            self._opequals(mode1, mode2, mode3)
+        elif opcode == 9:
+            self._adjustrelative(mode1)
+        elif opcode == 99:
+            self.is_running = False
+        else:
+            print("bad opcode {0}".format(opcode))
+            sys.exit(-1)

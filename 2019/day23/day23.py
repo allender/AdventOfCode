@@ -5,66 +5,97 @@ import sys
 import collections
 import queue
 import threading
+import time
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from IntComputer import IntComputer
 
-class NIC():
-
-    # list of all NICs
-    nodes = [ ]
-    _lock = threading.Lock()
-
-    def __init__(self, program, ident):
+class NIC(IntComputer.IntComputer):
+    def __init__(self, program, id, input_queue, output_queue):
         self._program = program
         self._computer = None
-        self._id = ident
-        self.input_queue = queue.Queue()
-        self.output_queue = queue.Queue()
-        self._output_count = 0
-        self.input_queue.put( self._id )
-        NIC.nodes.append(self)
+        self._id = id
+        self.idle = False
+        super().__init__( self._program, input_queue, output_queue )
 
-    def start(self):
-        self._computer = IntComputer.IntComputer( self._program, self.get_input, self.send_output )
-        thread = threading.Thread( target = self._computer.run)
-        thread.daemon = True     # allows thread to exit when main program exits
-        thread.start( )
+    def opinput(self, mode):
+        # overrideen from base class to return -1
+        # if there is no input to process
+        try:
+            input = self.input_queue.get( block = False)
+            self.idle = False
+        except queue.Empty:
+            input = -1
+            self.idle = True
 
-    def get_input(self):
-        value = -1
-        if self.input_queue.empty() is False:
-            value = self.input_queue.get( )
+        self._put_num(input, mode)
 
-        # print("{0} getting {1}".format(self._id, value))
+class Network():
+    def __init__(self, count, program):
+        self.num_nics = count
+        self.nodes = [ ]
+        self.input_queues = [ ]
+        self.output_queues = [ ]
+        self.nat_queue = queue.Queue()
+        self.nat_last_y = None
 
-        return value
+        for i in range( self.num_nics ):
+            self.input_queues.append( queue.Queue( ) )
+            self.input_queues[-1].put( i )
+            self.output_queues.append( queue.Queue( ) )
+            self.nodes.append( NIC(program, i, self.input_queues[-1], self.output_queues[-1]) )
 
-    def send_output(self, value):
-        # print('{0} needs to output'. format(self._id))
-        self.output_queue.put(value)
-        self._output_count += 1
-        if self._output_count == 3:
-            node = self.output_queue.get( )
-            x = self.output_queue.get( )
-            y = self.output_queue.get( )
+    def check_output_queues( self ):
+        for q in self.output_queues:
+            node = None
+            if q.qsize() >= 3:
+                node = q.get( )
+                x = q.get( )
+                y = q.get( )
 
-            if node == 255:
-                print ('{0} sends x/y  {1}/{2}'.format(node, x, y))
-            else:
-                NIC.nodes[node].input_queue.put( x )
-                NIC.nodes[node].input_queue.put( y )
-                self._output_count = 0
+                if node == 255:
+                    # create a new queue which has the effect of remembering the last
+                    # x/y pair that was sent.
+                    print('{0} sending {1},{2} to {3}'. format(self.output_queues.index(q), x, y, node))
+                    self.nat_queue = queue.Queue( )
+                    self.nat_queue.put( x )
+                    self.nat_queue.put( y )
 
-    def send( self, x, y ):
-        self._input_queue.put( x )
-        self._input_queue.put( y )
+                elif node is not None and 0 <= node <= self.num_nics:
+                    self.input_queues[node].put( x )
+                    self.input_queues[node].put( y )
 
-    @staticmethod
-    def start_all( ):
-        for node in NIC.nodes:
-            node.start( )
+    def check_nat(self):
+        idle = all(i.idle == True for i in self.nodes)
+        if idle is True and self.nat_queue.empty() is False:
+            x = self.nat_queue.get( )
+            y = self.nat_queue.get( )
+
+            self.input_queues[0].put( x )
+            self.input_queues[0].put( y )
+            
+            if self.nat_last_y == y:
+                print('twice in a row: {0}, {1}'.format(self.nat_last_y, y))
+                sys.exit(0)
+
+            self.nat_last_y = y
+
+
+    def monitor(self):
+        while True:
+            # step all of the nics.  GIL kills us in python so we will just
+            # run all of the nodes iteratively.  NIC overrides the input function
+            # to keep track of idle.
+            for nic in self.nodes:
+                nic.step( )
+
+            # check output queues to see if we need to forward packs
+            # to another nic or the nat
+            self.check_output_queues( )
+
+            # see if we have data for the NAT
+            self.check_nat( )
 
 
 if __name__ == '__main__':
@@ -74,11 +105,5 @@ if __name__ == '__main__':
     with open(filename) as f:
         program =  [ int(x) for x in f.read().split(',') ]
 
-    num_nics = 50 
-    for i in range(num_nics):
-        nic = NIC(program, i)
-
-    NIC.start_all( )
-
-    while True:
-        pass
+    network = Network(50, program)
+    network.monitor( )
