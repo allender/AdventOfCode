@@ -1,10 +1,16 @@
 import itertools
 import operator
 import functools
+import sys
+
+sys.path.append('../..')
+
+import utils
 
 # takes input and finds the two numbers that
 # add up to 2020
 
+@utils.func_timer
 def part1(data, n):
     for i in itertools.combinations(data, n):
         if sum(i) == 2020:

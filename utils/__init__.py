@@ -1,0 +1,1 @@
+from .timer import func_timer
