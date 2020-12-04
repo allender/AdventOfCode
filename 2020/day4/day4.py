@@ -65,8 +65,6 @@ def valid_passport(passport, validate):
         return False
 
     if (1920 <= int(key_dict['byr']) <= 2002) and (2010 <= int(key_dict['iyr']) <= 2020) and (2020 <= int(key_dict['eyr']) <= 2030):
-        if (key_dict['pid'] == '9833212692'):
-            print (key_dict)
         return True
 
     return False
