@@ -1,8 +1,3 @@
-import itertools
-import operator
-import functools
-from collections import namedtuple
-import re
 import sys
 
 sys.path.append('../..')
