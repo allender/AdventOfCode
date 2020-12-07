@@ -5,10 +5,6 @@ from collections import namedtuple
 import re
 import sys
 
-sys.path.append('../..')
-
-import utils
-
 test_data_invalid = """
 eyr:1972 cid:100
 hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
