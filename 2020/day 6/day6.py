@@ -30,13 +30,11 @@ if __name__ == '__main__':
 
     any_yes = 0
     all_yes = 0
-    for group in data:
-
+    for index, group in enumerate(data):
         split_group = group.replace('\n','')
         any_yes += len(set(split_group))
 
         count_dict = collections.Counter(split_group)
-        print(count_dict)
-        all_yes += sum( [x == len(group.split('\n')) for x in count_dict.values()] )
+        all_yes += sum( [x == len(group.strip().split('\n')) for x in count_dict.values()] )
 
     print (any_yes, all_yes)
