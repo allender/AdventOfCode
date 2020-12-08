@@ -50,9 +50,8 @@ if __name__ == '__main__':
         color_match = exp.match(l)
         if color_match == None:
             continue
-        contents = count_exp.findall(color_match.group('contents'))
         count_dict = {}
-        for count, color in contents:
+        for count, color in count_exp.findall(color_match.group('contents')):
             count_dict[color] = count
         container_dict[color_match.group('color')] = count_dict
 
@@ -66,6 +65,8 @@ if __name__ == '__main__':
         all_bags.extend(other_bags)
         for l in other_bags:
             bag_queue.put(l)
+
+    print(len(set(all_bags)))
 
     total_count = 0
     bag_queue.put("shiny gold")
