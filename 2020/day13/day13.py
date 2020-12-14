@@ -37,9 +37,6 @@ if __name__ == '__main__':
             largest = r[0]
     print (bus_numbers[index] * (bus_numbers[index] * int(remainders[index][1]+1) - my_time))
 
-    # sorted_primes = sorted(bus_numbers)
-    # prime_times = [ (p, bus_numbers.index(p)) for p in sorted_primes]
-    # print(prime_times)
     cur_bus = 0
     bus_number = bus_schedule[cur_bus][0]
     next_time = bus_schedule[cur_bus][1]
