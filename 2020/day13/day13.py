@@ -9,15 +9,6 @@ import utils
 test_data = """939
 7,13,x,x,59,x,31,19"""
 
-def get_next_time(schedule, cur_bus):
-    next_bus = cur_bus + 1
-    while bus_schedule[next_bus] == 'x':
-        next_bus += 1
-        if next_bus >= len(bus_schedule):
-            return ( None, None )
-
-    return ( next_bus, int(schedule[next_bus]) )
-
 if __name__ == '__main__':
     with open('input.txt') as f:
         input_data = f.read()
