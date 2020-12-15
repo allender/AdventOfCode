@@ -34,12 +34,25 @@ def find_unique(data):
         if not result:
             return (data[end])
 
-def find_weakness(data, num):
-    end = data.index(num)
-    for start in range(0, end): 
-        result = [ i for i, val in enumerate(itertools.accumulate(data[start:end], operator.add)) if val == num ]
-        if result:
-            return (min(data[start:start+result[0]]) + max(data[start:start+result[0]]))
+def find_weakness(data, target):
+    high = 1
+    low = 0
+    end = data.index(target)
+    n = data[low] + data[high]
+    while high < end:
+        if n == target:
+            return min(data[low:high]) + max(data[low:high])
+        if n < target:
+            high += 1
+            n += data[high]
+        else:
+            n -= data[low]
+            low += 1
+            
+    # for start in range(0, end): 
+    #     result = [ i for i, val in enumerate(itertools.accumulate(data[start:end], operator.add)) if val == num ]
+    #     if result:
+    #         return (min(data[start:start+result[0]]) + max(data[start:start+result[0]]))
 
 if __name__ == '__main__':
     with open('input.txt') as f:
