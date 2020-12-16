@@ -2,7 +2,7 @@ import re
 import time
 from collections import namedtuple
 
-test_data = """class: 1-3 or 5-7
+part1_data = """class: 1-3 or 5-7
 row: 6-11 or 33-44
 seat: 13-40 or 45-50
 
@@ -35,7 +35,7 @@ class Ticket():
 
     @classmethod
     def add_item(cls, name, low0, high0, low1, high1):
-        cls.ticket_items[name] = ((low0, high0, low1, high1))
+        cls.ticket_items[name] = (lambda n : (low0 <= n <= high0) or (low1 <= n <= high1))
 
     @classmethod
     def get_names(cls):
@@ -64,24 +64,11 @@ class Ticket():
         self.values =  values
 
     def invalid_for_any_field(self):
-        result = list(self.values) 
-
-        # loop over all values and see if values are valid for any field
-        for val in self.values:
-            for item in self.ticket_items.values():
-                if (val >= item[0] and val <= item[1]) or (val >= item[2] and val <= item[3]):
-                    result.remove(val)
-                    break
-
-        return result
+        valid_values = [ x for name, cond in self.ticket_items.items() for x in self.values if cond(x) == True ]
+        return [ v for v in self.values if v not in valid_values ]
 
     def get_invalid_fields(self):
-        result = [ ]
-        for val in self.values:
-            names = [ n for n, item in self.ticket_items.items() if (val < item[0] or (val > item[1] and val < item[2]) or val > item[3]) ]
-            result.append(names)
-                    
-        return result
+        return [ [n for n, cond in self.ticket_items.items() if cond(val) == False] for val in self.values ]
 
 if __name__ == '__main__':
     with open('input.txt') as f:
