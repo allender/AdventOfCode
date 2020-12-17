@@ -1,6 +1,6 @@
 import re
 import time
-from collections import namedtuple
+import functools
 
 part1_data = """class: 1-3 or 5-7
 row: 6-11 or 33-44
@@ -32,6 +32,7 @@ nearby tickets:
 class Ticket():
     ticket_items = {} 
     field_mappings = []
+    fields = []
 
     @classmethod
     def add_item(cls, name, low0, high0, low1, high1):
@@ -42,23 +43,12 @@ class Ticket():
         return [ item for item in cls.ticket_items.keys() ]
 
     @classmethod
-    def find_valid_fields(cls, valid_fields):
-        cls.field_mappings = [None] * len(cls.ticket_items)
-        index = 0
-        while index < len(cls.ticket_items):
-            cur_field = [ (i, x[0]) for i,x in enumerate(valid_fields) if len(x) == 1 ]
-            assert( len(cur_field) == 1 )
-            cur_field = cur_field[0]
-
-            # we now know that a column matches a field name
-            cls.field_mappings[cur_field[0]] = cur_field[1]
-            for f in valid_fields:
-                if cur_field[1] in f:
-                    f.remove(cur_field[1])
-
-            index += 1
-
-        return
+    def find_field_order(cls, possible):
+        cls.fields = { }
+        while possible:
+            key, column = [ (key, sum(values) ) for key, values in possible.items() if len(values) == 1 ][0]
+            cls.fields[key] = column
+            possible = { key : [ v for v in values if v != column ] for key, values in possible.items() if len(values) != 1 }
 
     def __init__(self, values):
         self.values =  values
@@ -109,23 +99,12 @@ if __name__ == '__main__':
 
     print(s)
 
-    valid_names = [ ]
-    for i in enumerate(Ticket.ticket_items):
-        valid_names.append(ticket.get_names())
+    possible = {}
+    for f, cond in Ticket.ticket_items.items():
+        possible[f] = [ x for x in range(len(my_ticket.values)) if all(map(lambda t: cond(t.values[x]), remaining_tickets)) ]
 
-    for ticket in remaining_tickets:
-        invalid_ticket_fields = ticket.get_invalid_fields()
-        for index, fields in enumerate(invalid_ticket_fields):
-            for f in fields:
-                if f in valid_names[index]:
-                    valid_names[index].remove(f)
+    # Ticket.find_valid_fields(valid_names)
+    Ticket.find_field_order(possible)
 
-
-    Ticket.find_valid_fields(valid_names)
-
-    val = 1
-    for i, f in enumerate(Ticket.field_mappings):
-        if 'departure' in f:
-            val *= my_ticket.values[i]  
-
+    val = functools.reduce(lambda x, y: x * y, [ my_ticket.values[val] for key, val in Ticket.fields.items() if 'departure' in key ])
     print(val)
