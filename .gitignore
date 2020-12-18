@@ -8,3 +8,5 @@ __pycache__/
 
 # vscode stuff
 .vscode/
+
+**/profile.out
