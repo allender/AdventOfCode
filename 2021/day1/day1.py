@@ -1,4 +1,4 @@
-import itertools
+from aocd import numbers
 
 def part1(data):
     increases = 0
@@ -13,8 +13,5 @@ def part2(data):
     return part1(sums)
 
 if __name__ == '__main__':
-    with open('input.txt') as f:
-        data =  [ int(l) for l in f.read().splitlines() ]
-
-    print(part1(data))
-    print(part2(data))
+    print(part1(numbers))
+    print(part2(numbers))

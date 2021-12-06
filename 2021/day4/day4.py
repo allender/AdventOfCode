@@ -1,5 +1,6 @@
 import sys
 from aocd import lines
+from typing import List 
 
 test_lines = [
     '7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1',
@@ -34,7 +35,7 @@ class Board():
                 self.picked = True
             return self.picked
 
-    def __init__(self, lines):
+    def __init__(self, lines: List):
         self.lines = []
         self.unmarked_sum = 0
         self.won = False
@@ -52,11 +53,11 @@ class Board():
         self.size = len(self.lines[0])
 
     # build up a row dynamically - this could stored
-    def get_row(self, num):
+    def get_row(self, num) -> List:
         return [ x for x in self.lines[num] ]
 
     # build up a column dynamically - this could stored
-    def get_column(self, num):
+    def get_column(self, num) -> List:
         column = []
         for r in range(self.size):
             column.append(self.lines[r][num])
@@ -65,12 +66,12 @@ class Board():
     # returns true if the gievn row is complete, false otherwise
     def row_complete(self, num):
         row = self.get_row(num)
-        return sum( [ int(x.picked) for x in row ] ) == self.size
+        return all( x.picked == True for x in row )
 
     # returns true if the gievn volume is complete, false otherwise
     def column_complete(self, num):
         column = self.get_column(num)
-        return sum( [ int(x.picked) for x in column ] ) == self.size
+        return all( x.picked == True for x in column )
 
     # checks a number to see if it's on the board
     def check_number(self, number):
