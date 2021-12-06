@@ -1,8 +1,7 @@
 from aocd import lines
 from collections import defaultdict
-import math
 import re
-from typing import List 
+from typing import List, Dict
 
 test_lines = [
     '0,9 -> 5,9',
@@ -17,7 +16,7 @@ test_lines = [
     '5,5 -> 8,2',
 ]
 
-def parse_coords(lines : List, allow_diag = False):
+def parse_coords(lines : List, allow_diag = False) -> Dict:
     positions = defaultdict(int)
     rexp = re.compile("(\d+),(\d+) -> (\d+),(\d+)")
     for l in lines:
