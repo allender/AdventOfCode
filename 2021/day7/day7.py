@@ -1,5 +1,5 @@
 from aocd import lines
-from collections import Counter
+from collections import defaultdict
 from typing import List
 
 test_lines = [
@@ -16,15 +16,19 @@ def part1(positions : List):
 
     return min(fuel_used)
 
+# sum consecutive numbers 1 through n
+def summation(n):
+    return int((n / 2) * (1 + n))
+
 def part2(positions: List):
     smallest = min(positions)
     largest = max(positions)
-    fuel_used = []
 
+    fuel_used = []
     for i in range(smallest, largest + 1):
         fuel = 0
         for j in positions:
-            fuel += sum( [x for x in range(abs(j - i) + 1) ])
+            fuel += summation(abs(j-i))
         fuel_used.append(fuel)
 
     return min(fuel_used)
