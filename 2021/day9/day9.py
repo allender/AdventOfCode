@@ -15,17 +15,14 @@ test_lines = [
 # directions for adjacent points
 adjacent = [ (-1, 0), (0, -1), (1, 0), (0, 1) ]
 def is_low(point, points):
-    x = point[0]
-    y = point[1]
     for a in adjacent:
-        x1 = x + a[0]
-        y1 = y + a[1]
-        if ((x1,y1) in points and points[(x1,y1)] <= points[point]):
+        p = (point[0] + a[0], point[1] + a[1])
+        if (p in points and points[p] <= points[point]):
             return False
         
     return True
 
-def part1(points):
+def part1(points : dict):
     # iteraste through all keys in the dict and then we can calculate
     # is that point is a minimum
     risk_level = 0
@@ -37,14 +34,7 @@ def part1(points):
 
     return low_points, risk_level
 
-def find_basin(basin_point_list : List, basin_points, points):
-    if not basin_point_list:
-        return 0
-
-
-    return 0 
-
-def part2(points, low_points):
+def part2(points : dict, low_points : List) -> int :
     # find all of the addjacent points to this low point
     basin_sizes = []
     for low_point in low_points:
@@ -54,23 +44,21 @@ def part2(points, low_points):
             point = points_to_check.pop(0)
             if point not in basin_points:
                 basin_points.append(point)
-            x = point[0]
-            y = point[1]
             for a in adjacent:
-                x1 = x + a[0]
-                y1 = y + a[1]
-                if ((x1,y1) in points and (x1, y1) not in basin_points and points[(x1,y1)] < 9):
-                    points_to_check.append((x1, y1))
+                p = (point[0] + a[0], point[1] + a[1])
+                if (p in points and p not in basin_points and points[p] < 9):
+                    points_to_check.append(p)
         
         basin_sizes.append(len(basin_points))
 
     basin_sizes.sort()
     return reduce(mul, basin_sizes[-3:], 1)
 
-
-
 if __name__ == '__main__': 
-    points = defaultdict(int) 
+    # create an int dict and then "surround" the points
+    # the 9's which will prevent flood filling ouf of the
+    # grid
+    points = defaultdict(int)
     for y in range(len(lines)):
         for x in range(len(lines[0])):
             points[(x, y)] = int(lines[y][x])
