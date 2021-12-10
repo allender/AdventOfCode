@@ -1,5 +1,5 @@
 from aocd import lines
-from typing import List
+from typing import List, Tuple
 from collections import defaultdict
 from functools import reduce
 from operator import mul
@@ -14,7 +14,7 @@ test_lines = [
 
 # directions for adjacent points
 adjacent = [ (-1, 0), (0, -1), (1, 0), (0, 1) ]
-def is_low(point, points):
+def is_low(point : tuple, points : dict) -> bool:
     for a in adjacent:
         p = (point[0] + a[0], point[1] + a[1])
         if (p in points and points[p] <= points[point]):
@@ -22,15 +22,15 @@ def is_low(point, points):
         
     return True
 
-def part1(points : dict):
+def part1(points : dict) -> Tuple[dict, int]:
     # iteraste through all keys in the dict and then we can calculate
     # is that point is a minimum
-    risk_level = 0
+    risk_level = 1
     low_points = []
     for point in points.keys():
         if is_low(point, points):
             low_points.append(point)
-            risk_level += points[point] + 1
+            risk_level += points[point]
 
     return low_points, risk_level
 
@@ -39,11 +39,10 @@ def part2(points : dict, low_points : List) -> int :
     basin_sizes = []
     for low_point in low_points:
         points_to_check = [low_point]
-        basin_points = []
+        basin_points = set() 
         while points_to_check:
             point = points_to_check.pop(0)
-            if point not in basin_points:
-                basin_points.append(point)
+            basin_points.add(point)
             for a in adjacent:
                 p = (point[0] + a[0], point[1] + a[1])
                 if (p in points and p not in basin_points and points[p] < 9):
