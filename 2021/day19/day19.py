@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List
-from itertools import permutations
+from itertools import permutations, product
 
 class Point():
 	def __init__(self, x, y, z):
@@ -26,6 +26,7 @@ class Point():
 class Scanner():
 	id = 0
 	axis_iter = permutations(range(3))
+	heading_iter = product([-1, 1], repeast = 3)
 
 	def __init__(self, _points: List[Point]):
 		self.id = Scanner.id
