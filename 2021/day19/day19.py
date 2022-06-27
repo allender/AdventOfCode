@@ -1,32 +1,14 @@
-from dataclasses import dataclass
+from re import I
+from aocd import lines
+from collections import namedtuple, defaultdict
 from typing import List
-from itertools import permutations, product
+from itertools import permutations, product, combinations
 
-class Point():
-	def __init__(self, x, y, z):
-		self.x = x
-		self.y = y
-		self.z = z
-
-	def distsq(self, point):
-		return (self.x - point.x) ** 2 + (self.y - point.y) ** 2 + (self.z - point.z) ** 2
-
-	def __sub__(self, point):
-		return Point(self.x - point.x, self.y - point.y, self.z - point.x)
-
-	def __add__(self, point):
-		return Point(self.x + point.x, self.y + point.y, self.z + point.x)
-
-	def __str__(self):
-		return f'({self.x}, {self.y}, {self.z})'
-
-	def __repr__(self):
-		return self.__str__()
+Point = namedtuple('Point', ['x', 'y', 'z'])
 
 class Scanner():
 	id = 0
-	axis_iter = permutations(range(3))
-	heading_iter = product([-1, 1], repeast = 3)
+	beacons = set()
 
 	def __init__(self, _points: List[Point]):
 		self.id = Scanner.id
@@ -34,53 +16,34 @@ class Scanner():
 
 		# where the scanner is located
 		self.center = Point(0, 0, 0)
+
 		# list of points that this scanner sees
 		self.points = _points
 
-		# dictionary of distances from one beacon to all other beacons
-		self.distances = {} 
+		# pre calculate all of the rotation values.   This is kind of
+		# cheating and giving me 48 possible rotated points instead of 24, which is
+		# all we need
+		self.point_rotations = {}
 		for p in self.points:
-			self.distances[p] = [ p.distsq(x) for x in self.points if x != p ]
-
+			self.point_rotations[p] = [ Point(p[x] * hx, p[y] * hy, p[z] * hz) for x, y, z in permutations(range(3)) for hx, hy, hz in product([-1, 1], repeat = 3) ]
+			
 	def __str__(self):
 		return f'{self.id} - # points: {len(self.points)}'
 
 	def __repr__(self):
 		return self.__str__()
 
-	def find_overlapping_points(self, s : 'Scanner'):
-		p1_list = []
-		p2_list = []
-		for p1, d1 in self.distances.items():
-			for p2, d2 in s.distances.items():
-				total = sum([ 1 for x in d2 if x in d1 ])
-
-				# if there are 11 (plus 1 for the current point which is 12)
-				# then we have a set of common points so add to lists
-				# and then we will calculate actual point locations
-				if total == 11:
-					p1_list.append(p1)
-					p2_list.append(p2)
-
-		if len(p1_list) > 0:
-			print (p1_list, p2_list)
-
-
 def parse_scanners(filename: str) -> List[Scanner]:
-	scanners = []
 	with open(filename) as f:
 		scanner_points = [ [ c for c in line.strip('\n').split('\n') ] for line in f.read().split('\n\n')]
-		for sp in scanner_points:
-			points = []
-			for p in sp[1:]:
-				x, y, z = [ int(v) for v in p.split(',') ]
-				points.append(Point(x, y, z))
-
-			scanners.append(Scanner(points))
+	scanners = []
+	for sp in scanner_points:
+		points = [ Point(int(x), int(y), int(z)) for p in sp[1:] for x, y, z in [ p.split(',') ] ]
+		scanners.append(Scanner(points))
 
 	return scanners
 
-def part1(scanners: List[Scanner]) -> int:
+def solve(scanners: List[Scanner]) -> int:
 	# pull off the first scanner (0) and calculate the distances
 	# from point to scanner (which we arbitrarily put at 0,0,0)
 	cur_scanner = scanners.pop(0)
@@ -88,13 +51,47 @@ def part1(scanners: List[Scanner]) -> int:
 
 	# for the rest of the scanners, identify the points in 
 	# common and put them into the scanner's list of points
-	next_scanner = scanners.pop(0)
-	for s in processed_scanners:
-		s.find_overlapping_points(next_scanner)
+	while scanners:
+		next_scanner = scanners.pop(0)
 
-	return 0
+		# wow this is ugly!!!
+		overlapping_points = None
+		for s in processed_scanners:
+			counts = defaultdict(list)
+			for unknown_point in next_scanner.points:
+				for rotated_point in next_scanner.point_rotations[unknown_point]:
+					for known_point in s.points:
+						diff = (known_point.x - rotated_point.x, known_point.y - rotated_point.y, known_point.z - rotated_point.z)
+						counts[diff].append(next_scanner.point_rotations[unknown_point].index(rotated_point))
+
+			overlapping_points = [ (k, v) for k, v in counts.items() if len(v) >= 12 ]
+			if overlapping_points:
+				offset = overlapping_points[0][0]
+				rotations = overlapping_points[0][1]
+
+				assert len(overlapping_points) == 1
+				next_scanner.points = [ Point(offset[0] + p[rotations[0]].x, offset[1] + p[rotations[0]].y, offset[2] + p[rotations[0]].z) for p in next_scanner.point_rotations.values() ]
+				next_scanner.center = Point(*offset)
+				processed_scanners.append(next_scanner)
+				break
+
+		if len(overlapping_points) == 0:
+			scanners.append(next_scanner)
+
+	for s in processed_scanners:
+		beacons = [ tuple((p.x, p.y, p.z)) for p in s.points ]
+		Scanner.beacons |= set(beacons)
+
+	print(len(Scanner.beacons))
+
+	best = 0
+	for s1, s2 in combinations(processed_scanners, 2):
+		diff = abs(s1.center[0] - s2.center[0]) + abs(s1.center[1] - s2.center[1]) + abs(s1.center[2] - s2.center[2])
+		if diff > best:
+			best = diff
+	print(best)
 
 if __name__ == '__main__':
-	scanners = parse_scanners('test.txt')
-	print(scanners)
-	print(part1(scanners))
+	scanners = parse_scanners('input.txt')
+	solve(scanners)
+
