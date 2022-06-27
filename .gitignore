@@ -10,5 +10,6 @@ __pycache__/
 
 # vscode stuff
 .vscode/
+.vs/
 
 **/profile.out
