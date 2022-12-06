@@ -3,8 +3,7 @@ from aocd import lines
 
 puzzle = Puzzle(year=2022, day = 5)
 
-# parse out the crate information
-# figure out how many stacks we have
+# look at first line to figure out how many stacks we have
 l = lines[0]
 stacks_p1 = [ [] for i in range(0, len(l), 4)]
 stacks_p2 = [ [] for i in range(0, len(l), 4)]
@@ -25,8 +24,7 @@ for l in lines:
                 stacks_p2[stack_number].insert(0, crate[1])
 
     elif l:
-        # here we are parsing the movements.   Subtract 1 from start/end
-        # because we are zero based
+        # here we are parsing the movements.   Subtract 1 from start/end # because we are zero based
         p = l.split()
         count = int(p[1])
         start = int(p[3]) - 1
@@ -34,8 +32,12 @@ for l in lines:
         part2_temp = []
         for _ in range(count):
             stacks_p1[end].append(stacks_p1[start].pop())
+
+            # for part 2 - put in temp list, and then we will
+            # reverse that after this inner loop
             part2_temp.append(stacks_p2[start].pop())
 
+        # reverse the temp list for part 2
         for _ in range(count):
             stacks_p2[end].append(part2_temp.pop())
 
