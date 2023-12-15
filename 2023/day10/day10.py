@@ -28,8 +28,13 @@ while True:
     next_nodes = graph[current]
     next = [ n for n in next_nodes if n not in path and n in graph and len(graph[n]) > 0 ]
     if len(next) == 0:
+        if len(next_nodes) !=0 and start not in next_nodes:
+            assert(0)
         break
-    current = next[0]
+    if current == start:
+        current = next[2]
+    else:
+        current = next[0]
 
 print((len(path))//2)
 
